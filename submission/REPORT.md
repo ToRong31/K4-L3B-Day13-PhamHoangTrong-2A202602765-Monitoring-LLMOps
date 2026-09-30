@@ -8,7 +8,7 @@
 - **MSSV:** 2A202602765
 - **Lớp:** K4-L3B
 - **Repository URL:** https://github.com/ToRong31/K4-L3B-Day13-PhamHoangTrong-2A202602765-Monitoring-LLMOps.git
-- **Commit SHA cuối:** Chờ commit nộp CP4
+- **Commit SHA cuối:** [Xem commit mới nhất trên nhánh `main`](https://github.com/ToRong31/K4-L3B-Day13-PhamHoangTrong-2A202602765-Monitoring-LLMOps/commits/main). Bản source, report và evidence đã hoàn thiện trước khi cập nhật dòng này ở commit `26664c364f224cc503ea70bd2271490e7c04ebde`.
 - **Challenge ID:** `day13-k4-l3b-monitoring-llmops-v1`
 - **Tên project Langfuse cá nhân:** `day13-k4-l3b-2A202602765`
 

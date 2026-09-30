@@ -8,3 +8,11 @@ config/challenge.json
 .env
 .pytest_cache/
 .antigravity/
+
+# Keep detailed screenshot drafts local; submit only the five runtime images.
+/submission/evidence/[0-9][0-9]-*.png
+!/submission/evidence/01-incident-log.png
+!/submission/evidence/02-trace-list.png
+!/submission/evidence/03-incident-trace.png
+!/submission/evidence/04-prompt-versioning.png
+!/submission/evidence/05-dashboard-incident.png
