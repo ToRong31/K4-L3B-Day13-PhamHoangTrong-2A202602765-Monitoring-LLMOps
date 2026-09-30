@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 13 · Monitoring & LLMOps</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#e9eefb;background:#0b1220}
+*{box-sizing:border-box}body{margin:0;padding:28px 32px}header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+h1{font-size:25px;margin:0 0 7px}p{margin:0;color:#9dadc7}.badge{background:#17243a;border:1px solid #30425d;border-radius:10px;padding:10px 14px;color:#c6d8f8;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(360px,1fr));gap:18px}.panel{background:#111d30;border:1px solid #263955;border-radius:16px;padding:18px;min-height:220px}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:baseline}h2{font-size:17px;margin:0}.unit{color:#8fa4c1;font-size:12px}.summary{font-size:14px;margin:12px 0 0;color:#d8e5fa;min-height:18px}.chart{width:100%;height:140px;margin-top:5px;display:block}.legend{font-size:12px;color:#abbcd5;display:flex;gap:18px;flex-wrap:wrap}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.threshold{color:#ffbd72}.muted{color:#8093ae}@media(max-width:900px){.grid{grid-template-columns:1fr}body{padding:18px}}@media(max-width:540px){header{display:block}.badge{display:inline-block;margin-top:14px}}
+</style></head><body>
+<header><div><h1>Monitoring & LLMOps · CP2–CP3</h1><p id="subtitle">Nguồn: data/logs.jsonl</p></div><div class="badge" id="status">Đang tải dữ liệu…</div></header>
+<main class="grid" id="grid"></main>
+<script>
+const defs=[
+  {id:'latency',keys:['p50','p95','p99','ttft_p95'],names:['P50','P95','P99','TTFT P95'],colors:['#54d4c9','#81a9ff','#bf93ff','#f4bd6c'],threshold:3000},
+  {id:'traffic',keys:['traffic'],names:['Requests/min'],colors:['#54d4c9'],threshold:1},
+  {id:'errors',keys:['errors','retrieval'],names:['Error rate','Retrieval success'],colors:['#ff738a','#54d4c9'],threshold:2},
+  {id:'cost',keys:['cost'],names:['Cumulative cost'],colors:['#f4bd6c'],threshold:2.5},
+  {id:'tokens',keys:['tokens_in','tokens_out'],names:['Input total','Output total'],colors:['#81a9ff','#bf93ff'],threshold:50000},
+  {id:'quality',keys:['quality'],names:['Mean quality'],colors:['#54d4c9'],threshold:0.75}
+];
+function fmt(x,d=2){return x==null?'—':Number(x).toLocaleString('en-US',{maximumFractionDigits:d})}
+function details(id,s){const x=s[id];switch(id){
+  case 'latency':return `P50 ${fmt(x.p50)} · P95 ${fmt(x.p95)} · P99 ${fmt(x.p99)} · TTFT P95 ${fmt(x.ttft_p95)} ms`;
+  case 'traffic':return `${fmt(x.requests,0)} requests · ${fmt(x.rate_per_minute)} requests/min`;
+  case 'errors':return `Error ${fmt(x.error_rate_pct)}% · Retrieval success ${fmt(x.retrieval_success_pct)}% · Types ${JSON.stringify(x.error_types)}`;
+  case 'cost':return `Total $${fmt(x.total_usd,6)} USD`;
+  case 'tokens':return `Input ${fmt(x.input,0)} · Output ${fmt(x.output,0)} tokens`;
+  case 'quality':return `Mean ${fmt(x.mean,3)} / 1`;
+}}
+function chart(d,def){
+ const w=700,h=190,L=45,R=12,T=12,B=28, values=def.keys.flatMap(k=>d.series[k].filter(v=>v!==null));
+ const max=Math.max(def.threshold*1.15,...values.map(v=>v*1.1),1), min=0, px=i=>L+i*(w-L-R)/(d.minutes.length-1), py=v=>T+(max-v)*(h-T-B)/(max-min);
+ let out=`<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${def.id} time series and threshold">`;
+ for(let j=0;j<4;j++){let y=T+j*(h-T-B)/3;out+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="#273953"/><text x="${L-7}" y="${y+4}" text-anchor="end" fill="#7990ad" font-size="11">${fmt(max*(1-j/3),max<10?2:0)}</text>`}
+ let ty=py(def.threshold);out+=`<line x1="${L}" x2="${w-R}" y1="${ty}" y2="${ty}" stroke="#ffbd72" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+ def.keys.forEach((key,n)=>{let pts=[];function flush(){if(pts.length>1)out+=`<polyline fill="none" stroke="${def.colors[n]}" stroke-width="2.5" points="${pts.join(' ')}"/>`;else if(pts.length) {let [x,y]=pts[0].split(',');out+=`<circle cx="${x}" cy="${y}" r="3" fill="${def.colors[n]}"/>`}pts=[]}
+ d.series[key].forEach((v,i)=>{if(v===null){flush()}else pts.push(`${px(i).toFixed(1)},${py(v).toFixed(1)}`)});flush()});
+ for(let i=0;i<d.minutes.length;i+=15){out+=`<text x="${px(i)}" y="${h-5}" text-anchor="middle" fill="#7990ad" font-size="11">${d.minutes[i]}</text>`}
+ return out+'</svg>';
+}
+function render(d){document.getElementById('subtitle').textContent=`Nguồn: data/logs.jsonl · Time range: ${d.time_range_minutes} phút · UTC · Refresh: ${d.refresh_seconds} giây`;
+ document.getElementById('status').textContent=`Cập nhật ${new Date(d.generated_at).toLocaleTimeString('vi-VN')} · Tự làm mới 30s`;
+ document.getElementById('grid').innerHTML=defs.map(def=>{let p=d.panels[def.id],t=d.thresholds[def.id];return `<section class="panel"><div class="top"><h2>${p.title}</h2><span class="unit">${p.unit}</span></div><div class="summary">${details(def.id,d.summary)}</div>${chart(d,def)}<div class="legend">${def.names.map((n,i)=>`<span><i class="dot" style="background:${def.colors[i]}"></i>${n}</span>`).join('')}<span class="threshold">┄ Threshold: ${t.operator==='lte'?'≤':'≥'} ${fmt(t.value)} ${p.unit}</span></div></section>`}).join('')
+}
+async function refresh(){try{const res=await fetch('/data',{cache:'no-store'});if(!res.ok)throw Error(res.status);render(await res.json())}catch(e){document.getElementById('status').textContent=`Lỗi tải dữ liệu: ${e.message}`}}
+refresh();setInterval(refresh,30000);
+</script></body></html>

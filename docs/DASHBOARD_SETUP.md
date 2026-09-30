@@ -1,5 +1,12 @@
 # Dựng và kiểm tra dashboard
 
+## Dashboard local đã triển khai
+
+Chạy trong venv API: `python scripts/dashboard.py`, rồi mở `http://127.0.0.1:8501`.
+Dashboard đọc lại `data/logs.jsonl` qua endpoint local `/data` mỗi 30 giây, dùng cửa sổ trượt 60 phút theo UTC và vẽ đúng sáu panel trong `config/dashboard.yaml`. Không cần cài Streamlit hay thư viện đồ thị vào venv API.
+
+Với panel Errors, retrieval success lấy mọi event có `tool_success` kiểu boolean, gồm `response_sent` và `request_failed`. Các đường threshold được vẽ ngay trên từng biểu đồ. Panel Cost và Tokens thể hiện tổng tích lũy trong cửa sổ 60 phút; các giá trị tổng nằm trên đầu panel.
+
 [`../config/dashboard.yaml`](../config/dashboard.yaml) là contract chấm điểm, không phụ thuộc việc bạn dựng dashboard trong Langfuse hay một công cụ local. File này quy định đúng nguồn dữ liệu, phép tổng hợp, đơn vị và threshold cho sáu panel.
 
 Trường `query` trong YAML là pseudocode mô tả phép tính, không phải câu lệnh để copy nguyên vào mọi công cụ. Bạn chuyển cùng logic đó sang cú pháp của công cụ đã chọn.

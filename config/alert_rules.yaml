@@ -1,25 +1,28 @@
 alerts:
-  - name: TODO_alert_1
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: HighAnswerLatencyP95
+    severity: warning
+    condition: 'p95(response_sent.latency_ms, window=5m) > 3000'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602765
     runbook: docs/alerts.md#alert-1
-  - name: TODO_alert_2
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: ElevatedRequestErrorRate
+    severity: critical
+    condition: '100 * count(request_failed, window=5m) / count(request_received, window=5m) > 2; min_requests=20'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602765
     runbook: docs/alerts.md#alert-2
-  - name: TODO_alert_3
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: AnswerQualityDegraded
+    severity: warning
+    condition: 'mean(response_sent.quality_score, window=10m) < 0.75; min_responses=20'
+    duration: 10m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602765
     runbook: docs/alerts.md#alert-3

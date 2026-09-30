@@ -20,7 +20,7 @@ dashboard-validator.txt
 05-dashboard-incident.png
 ```
 
-Ảnh 01 lấy từ `data/logs.jsonl`; ảnh 02–04 lấy từ project Langfuse cá nhân; ảnh 05 lấy từ dashboard. Không mở/chụp trang API Keys và không tách thêm ảnh nếu thông tin đã đọc được.
+Ảnh 01 lấy từ `data/logs.jsonl`; ảnh 02–04 lấy từ project Langfuse cá nhân; ảnh 05 lấy từ dashboard. Ba ảnh incident phải khớp challenge K4-L3B chính thức. Không mở/chụp trang API Keys và không tách thêm ảnh nếu thông tin đã đọc được.
 
 Từ `submission/REPORT.md`, dẫn ảnh bằng đường dẫn tương đối:
 
